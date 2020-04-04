@@ -46,7 +46,7 @@
 }
 .btnRegister{
     float: right;
-    margin-top: 10%;
+    margin-top: 2%;
     border: none;
     border-radius: 1.5rem;
     padding: 2%;
@@ -89,3 +89,4 @@
     font-weight: bolder;
     font-size: 210%;
 }
+
