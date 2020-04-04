@@ -1,34 +1,27 @@
 .register{
-    background: -webkit-linear-gradient(left, #3931af, #00c6ff);
-    margin-top: 3%;
+    background-image: linear-gradient(rgba(0, 0, 255, 0.5), rgba(0, 2, 14, 0.5)),
+    url("./images/Background.jpg");
+    background-repeat:no-repeat;
+    background-attachment: fixed;
+    background-size: 100% 100%;
     padding: 3%;
+    height: 100%;
 }
 .register-left{
     text-align: center;
     color: #fff;
     margin-top: 4%;
 }
-.register-left input{
-    border: none;
-    border-radius: 1.5rem;
-    padding: 2%;
-    width: 60%;
-    background: #f8f9fa;
-    font-weight: bold;
-    color: #383d41;
-    margin-top: 30%;
-    margin-bottom: 3%;
-    cursor: pointer;
-}
 .register-right{
-    background: #f8f9fa;
+    background: #3194f8;
+    opacity: 0.6;
     border-top-left-radius: 10% 50%;
     border-bottom-left-radius: 10% 50%;
 }
 .register-left img{
     margin-top: 15%;
     margin-bottom: 5%;
-    width: 25%;
+    width: 45%;
     -webkit-animation: mover 2s infinite  alternate;
     animation: mover 1s infinite  alternate;
 }
@@ -41,13 +34,15 @@
     100% { transform: translateY(-20px); }
 }
 .register-left p{
-    font-weight: lighter;
+    font-weight: bolder;
+    font-size: 150%;
     padding: 12%;
     margin-top: -9%;
 }
 .register .register-form{
     padding: 10%;
     margin-top: 10%;
+    
 }
 .btnRegister{
     float: right;
@@ -55,9 +50,9 @@
     border: none;
     border-radius: 1.5rem;
     padding: 2%;
-    background: #0062cc;
+    background: #033d7a;
     color: #fff;
-    font-weight: 600;
+    font-weight: 800;
     width: 50%;
     cursor: pointer;
 }
@@ -72,7 +67,7 @@
 .register .nav-tabs .nav-link{
     padding: 2%;
     height: 34px;
-    font-weight: 600;
+    font-weight: 1000;
     color: #fff;
     border-top-right-radius: 1.5rem;
     border-bottom-right-radius: 1.5rem;
@@ -82,14 +77,15 @@
 }
 .register .nav-tabs .nav-link.active{
     width: 100px;
-    color: #0062cc;
-    border: 2px solid #0062cc;
+    color: #033d7a;
+    border: 2px solid #033d7a;
     border-top-left-radius: 1.5rem;
     border-bottom-left-radius: 1.5rem;
 }
 .register-heading{
     text-align: center;
     margin-top: 8%;
-    margin-bottom: -15%;
-    color: #495057;
+    color: rgb(8, 8, 8);
+    font-weight: bolder;
+    font-size: 210%;
 }
