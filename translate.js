@@ -329,7 +329,7 @@ $("#encrypt1").click(function () {
     var Iv="e6f343ff8338e984";
     var Ctext="";
     for(var i=0;i<Ptext.length;i+=16){
-        Ptext_block=obj.xor(Ptext.substr(i,16),Iv);
+        Ptext_block=obj.xor(Ptext.substr(i,16).padStart(16,'0'),Iv);
         var Ctext_block = obj.Encrypt(Ptext_block,key);
         Ctext+=Ctext_block;
         Iv=Ctext_block;
@@ -342,7 +342,7 @@ $("#decrypt1").click(function () {
     var Iv="e6f343ff8338e984";
     var Ptext="";
     for(var i=0;i<Ctext.length;i+=16){
-        var Ptext_block=obj.Decrypt(Ctext.substr(i,16),key);
+        var Ptext_block=obj.Decrypt(Ctext.substr(i,16).padStart(16,'0'),key);
         Ptext_block=obj.xor(Ptext_block,Iv);
         Ptext+=Ptext_block;
         Iv=Ctext.substr(i,16);
@@ -364,7 +364,7 @@ $("#encrypt2").click(function () {
     var Ctext="";
     for(var i=0;i<Ptext.length;i+=16){
        Iv=obj.Encrypt(Iv,key);
-       var ct_block=obj.xor(Iv,Ptext.substr(i,16));
+       var ct_block=obj.xor(Iv,Ptext.substr(i,16).padStart(16,'0'));
        Ctext+=ct_block;
     }
     $("#c_t2").val(Ctext);
@@ -376,7 +376,7 @@ $("#decrypt2").click(function () {
     var Ptext="";
     for(var i=0;i<Ctext.length;i+=16){
        Iv=obj.Encrypt(Iv,key);
-       var pt_block=obj.xor(Iv,Ctext.substr(i,16));
+       var pt_block=obj.xor(Iv,Ctext.substr(i,16).padStart(16,'0'));
        Ptext+=pt_block;
     }
     $("#p_t2").val(Ptext);
