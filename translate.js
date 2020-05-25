@@ -9,9 +9,9 @@ $(document).ready(function () {
         "be5466cf", "34e90c6c", "c0ac29b7", "c97c50dd", "3f84d5b5", 
         "b5470917", "9216d5d9", "8979fb1b" ]; 
         var j = 0; 
-        for (var i = 0; i < key.length; i++) { 
-            P[i] = xor(P[i], key.substr(j, j + 8)); 
-            j = (j + 8) % key.length(); 
+        for (var i = 0; i < P.length; i++) { 
+            P[i] =this.xor(P[i], key.substr(j, j + 8)); 
+            j = (j + 8) % key.length; 
         } 
         return P;
         }
@@ -48,15 +48,23 @@ $(document).ready(function () {
                     str=str+'1';
                 }
             }
-            return bin2hex_(str);
+            return this.bin2hex_(str);
         }
         round(i,pt,keys){
             var left=pt.substr(0,8)
             var right=pt.substr(8);
-            left=xor(left,keys[i]);
-            var fout=f(left);
-            right=xor(right,fout);
+            left=this.xor(left,keys[i]);
+            var fout=this.f(left);
+            right=this.xor(right,fout);
             return right+left;
+        }
+        addBin(a,b){ 
+            var n1 = parseInt(a, 16); 
+            var n2 = parseInt(b, 16); 
+            n1 = (n1 + n2)%(Math.pow(2,32));
+            var ans =n1.toString(16); 
+            ans = "00000000" + ans; 
+            return ans.substring(ans.length- 8); 
         }
         f(string){
             var S=[[ "d1310ba6", "98dfb5ac", "2ffd72db", "d01adfb7", "b8e1afed", 
@@ -267,35 +275,42 @@ $(document).ready(function () {
             "02fb8a8c", "01c36ae4", "d6ebe1f9", "90d4f869", "a65cdea0", 
             "3f09252d", "c208e69f", "b74e6132", "ce77e25b", "578fdfe3", 
             "3ac372e6"]];
-            var a;
+            var a=[];
             var ans;
-            /*for (var i = 0; i < 8; i += 2) { 
-                // the column number for S-box 
-                // is 8-bit value(8*4 = 32 bit plain text) 
-                var col 
-                    = Long.parseUnsignedLong( 
-                        hexToBin( 
-                            plainText.substring(i, i + 2)), 
-                        2); 
-                a[i / 2] = S[i / 2][(int)col]; 
+            for (var i = 0; i < 8; i += 2) { 
+               var col=parseInt(this.hex2bin_(string.substr(i,2)), 2);
+               a.push(S[i/2][col]);
             } 
-            ans = addBin(a[0], a[1]); 
-            ans = xor(ans, a[2]); 
-            ans = addBin(ans, a[3]); 
-            return ans;*/  
+            ans = this.addBin(a[0], a[1]); 
+            ans = this.xor(ans, a[2]); 
+            ans = this.addBin(ans, a[3]); 
+            return ans;
         }
         Encrypt(string,key){
             var pt_hex=string;
             var round_keys=this.key_gen(key);
             for(var i=0;i<16;i++){
-                pt_hex=round(i,pt_hex,round_keys);
+                pt_hex=this.round(i,pt_hex,round_keys);
             }
-            var L=pt_hex.substr(0,8);
-            var R=pt_64.substr(8);
-            R=this.xor(R,p[16]);
-            L=this.xor(L,p[17]);
-            var ct_hex=R+L;
+            var R=pt_hex.substr(0,8);
+            var L=pt_hex.substr(8);
+            R=this.xor(R,round_keys[16]);
+            L=this.xor(L,round_keys[17]);
+            var ct_hex=L+R;
             return ct_hex;
+        }
+        Decrypt(string,key){
+            var ct_hex=string;
+            var round_keys=this.key_gen(key);
+            for(var i=17;i>1;i--){
+                ct_hex=this.round(i,ct_hex,round_keys);
+            }
+            var R=ct_hex.substr(0,8);
+            var L=ct_hex.substr(8);
+            R=this.xor(R,round_keys[1]);
+            L=this.xor(L,round_keys[0]);
+            var p_text=L+R;
+            return p_text;
         }
     }
 
@@ -310,13 +325,29 @@ $("#c_t1").keydown(function () {
 });
 $("#encrypt1").click(function () {
     var Ptext = $("#p_t1").val();
-    var key=$("#Key1").val();
-    var Ctext = obj.Encrypt(Ptext,key);
+    var key=$("#key1").val();
+    var Iv="e6f343ff8338e984";
+    var Ctext="";
+    for(var i=0;i<Ptext.length;i+=16){
+        Ptext_block=obj.xor(Ptext.substr(i,16),Iv);
+        var Ctext_block = obj.Encrypt(Ptext_block,key);
+        Ctext+=Ctext_block;
+        Iv=Ctext_block;
+    }
     $("#c_t1").val(Ctext);
 });
 $("#decrypt1").click(function () {
-    var text = $("#c_t1").val();
-    $("#p_t1").val(text);
+    var Ctext = $("#c_t1").val();
+    var key=$("#key1").val();
+    var Iv="e6f343ff8338e984";
+    var Ptext="";
+    for(var i=0;i<Ctext.length;i+=16){
+        var Ptext_block=obj.Decrypt(Ctext.substr(i,16),key);
+        Ptext_block=obj.xor(Ptext_block,Iv);
+        Ptext+=Ptext_block;
+        Iv=Ctext.substr(i,16);
+    }
+    $("#p_t1").val(Ptext);
 });
 
 
@@ -327,12 +358,28 @@ $("#c_t2").keydown(function () {
     $("#p_t2").val("");
 });
 $("#encrypt2").click(function () {
-    var text = $("#p_t2").val();
-    $("#c_t2").val(text);
+    var Ptext = $("#p_t2").val();
+    var key=$("#key2").val();
+    var Iv="e6f343ff8338e984";
+    var Ctext="";
+    for(var i=0;i<Ptext.length;i+=16){
+       Iv=obj.Encrypt(Iv,key);
+       var ct_block=obj.xor(Iv,Ptext.substr(i,16));
+       Ctext+=ct_block;
+    }
+    $("#c_t2").val(Ctext);
 });
 $("#decrypt2").click(function () {
-    var text = $("#c_t2").val();
-    $("#p_t2").val(text);
+    var Ctext = $("#c_t2").val();
+    var key=$("#key2").val();
+    var Iv="e6f343ff8338e984";
+    var Ptext="";
+    for(var i=0;i<Ctext.length;i+=16){
+       Iv=obj.Encrypt(Iv,key);
+       var pt_block=obj.xor(Iv,Ctext.substr(i,16));
+       Ptext+=pt_block;
+    }
+    $("#p_t2").val(Ptext);
 });
 
 });
