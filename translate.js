@@ -1,7 +1,7 @@
 $(document).ready(function () {
     class Main_Class{
-        constructor(){
-            this.String=[];
+        constructor(string){
+            this.IV=string;
         }
         key_gen(key){
         var P=[ "243f6a88", "85a308d3", "13198a2e", "03707344", "a4093822", 
@@ -315,8 +315,17 @@ $(document).ready(function () {
     }
 
 
-var obj=new Main_Class();
-
+var obj=new Main_Class(Ivgenerator());
+function getRandomNumberBetween(min,max){
+    return Math.floor(Math.random()*(max-min+1)+min);
+}
+function Ivgenerator(){
+    var Min_value = "0000000000000000";
+    var Max_value = "FFFFFFFFFFFFFFFF";
+    Min_value = parseInt(Min_value, 16);
+    Max_value = parseInt(Max_value, 16);
+    return getRandomNumberBetween(Min_value, Max_value).toString(16).padStart(16, '0');
+}
 $("#p_t1").keydown(function () {
     $("#c_t1").val("");
 });
@@ -326,7 +335,7 @@ $("#c_t1").keydown(function () {
 $("#encrypt1").click(function () {
     var Ptext = $("#p_t1").val();
     var key=$("#key1").val();
-    var Iv="e6f343ff8338e984";
+    var Iv=obj.IV;
     var Ctext="";
     for(var i=0;i<Ptext.length;i+=16){
         Ptext_block=obj.xor(Ptext.substr(i,16).padStart(16,'0'),Iv);
@@ -339,7 +348,7 @@ $("#encrypt1").click(function () {
 $("#decrypt1").click(function () {
     var Ctext = $("#c_t1").val();
     var key=$("#key1").val();
-    var Iv="e6f343ff8338e984";
+    var Iv=obj.IV;
     var Ptext="";
     for(var i=0;i<Ctext.length;i+=16){
         var Ptext_block=obj.Decrypt(Ctext.substr(i,16).padStart(16,'0'),key);
@@ -360,7 +369,7 @@ $("#c_t2").keydown(function () {
 $("#encrypt2").click(function () {
     var Ptext = $("#p_t2").val();
     var key=$("#key2").val();
-    var Iv="e6f343ff8338e984";
+    var Iv=obj.IV;
     var Ctext="";
     for(var i=0;i<Ptext.length;i+=16){
        Iv=obj.Encrypt(Iv,key);
@@ -372,7 +381,7 @@ $("#encrypt2").click(function () {
 $("#decrypt2").click(function () {
     var Ctext = $("#c_t2").val();
     var key=$("#key2").val();
-    var Iv="e6f343ff8338e984";
+    var Iv=obj.IV
     var Ptext="";
     for(var i=0;i<Ctext.length;i+=16){
        Iv=obj.Encrypt(Iv,key);
