@@ -7,58 +7,59 @@ $(document).ready(function () {
         var P=[ "243f6a88", "85a308d3", "13198a2e", "03707344", "a4093822", 
         "299f31d0", "082efa98", "ec4e6c89", "452821e6", "38d01377", 
         "be5466cf", "34e90c6c", "c0ac29b7", "c97c50dd", "3f84d5b5", 
-        "b5470917", "9216d5d9", "8979fb1b" ]; 
+        "b5470917", "9216d5d9", "8979fb1b" ]; // given P array
         var j = 0; 
         for (var i = 0; i < P.length; i++) { 
-            P[i] =this.xor(P[i], key.substr(j, j + 8)); 
-            j = (j + 8) % key.length; 
+            P[i] =this.xor(P[i], key.substr(j, j + 8));// xor-ing 32-bit parts of the key with initial subkeys.  
+            j = (j + 8) % key.length; //roll over to 1st 32-bits depending on key length
         } 
-        return P;
+        return P;//return the modified P array
         }
 
         hex2bin(string){
-            return (parseInt(string, 16).toString(2)).padStart(4, '0');
+            return (parseInt(string, 16).toString(2)).padStart(4, '0'); /*parseInt converts the hexadecimal to binary and 
+            it is ensured that 4 bits are occupied per hexadecimal char*/
         }
-        hex2bin_(string){
-            var result='';
-            string.split("").forEach(str => {
-                result += this.hex2bin(str);
+        hex2bin_(string){//contains hex string as argument
+            var result=''; //result will store final binary text
+            string.split("").forEach(str => { // splitting the input one character at a time
+                result += this.hex2bin(str); //one hexadecimal character converted to binary and appended to result
             })
-            return result;
+            return result;// hexadecimal converted to binary text
         }
-        bin2hex_(string){
-            var st="";
+        bin2hex_(string){//contains binary string as argument
+            var st=""; //st stored the final hexadecimal text
             var n=string.length;
             while(n){
                 st=st+parseInt(string.substr(0,4),2).toString(16);
                 string=string.substr(4);
                 n-=4;
             }
-            return st;
+            return st;//binary text converted to hexadecimal text
         }
         xor(R,K){
-            R=this.hex2bin_(R);
-            K=this.hex2bin_(K);
+            R=this.hex2bin_(R);//R is converted from hex to binary
+            K=this.hex2bin_(K);//K is converted from hex to binary
             var str='';
             for(var i=0;i<R.length;i++){
                 if(R[i]==K[i]){
-                    str=str+'0';
+                    str=str+'0'; //if both bits equal then '0'
                 }
                 else{
-                    str=str+'1';
+                    str=str+'1';// if bits different then '1'
                 }
             }
-            return this.bin2hex_(str);
+            return this.bin2hex_(str);//result converted from binary to hex and returned
         }
-        round(i,pt,keys){
-            var left=pt.substr(0,8)
-            var right=pt.substr(8);
-            left=this.xor(left,keys[i]);
+        round(i,pt,keys){// i=round _no, pt=plaintext, keys=all round keys
+            var left=pt.substr(0,8)//left part contains first 32 bits
+            var right=pt.substr(8);//right part contains last 32 bits
+            left=this.xor(left,keys[i]);//left is Xor-ed with round_keys[i]
             var fout=this.f(left);
             right=this.xor(right,fout);
             return right+left;
         }
-        addBin(a,b){ 
+        addBin(a,b){ // addition modulo 2^32 of two hexadecimal strings.
             var n1 = parseInt(a, 16); 
             var n2 = parseInt(b, 16); 
             n1 = (n1 + n2)%(Math.pow(2,32));
@@ -277,28 +278,31 @@ $(document).ready(function () {
             "3ac372e6"]];
             var a=[];
             var ans;
-            for (var i = 0; i < 8; i += 2) { 
+            //break the text into 4 parts, each part is 8 bit that gives the column number
+            for (var i = 0; i < 8; i += 2) {// the column number for S-box is 8-bit value (8*4 = 32 bit plain text) 
                var col=parseInt(this.hex2bin_(string.substr(i,2)), 2);
                a.push(S[i/2][col]);
             } 
-            ans = this.addBin(a[0], a[1]); 
-            ans = this.xor(ans, a[2]); 
-            ans = this.addBin(ans, a[3]); 
-            return ans;
+            ans = this.addBin(a[0], a[1]);//add first and second entry obtained from sbox1 and sbox2
+            ans = this.xor(ans, a[2]); //Xor the previous result with entry obtained from sbox3
+            ans = this.addBin(ans, a[3]); //add the previous result with entry obtained from sbox4
+            return ans;// return answer
         }
         Encrypt(string,key){
             var pt_hex=string;
-            var round_keys=this.key_gen(key);
-            for(var i=0;i<16;i++){
-                pt_hex=this.round(i,pt_hex,round_keys);
+            var round_keys=this.key_gen(key);//calling the key generation function using input key as parameter
+            for(var i=0;i<16;i++){//pt_hex undergoes 16 rounds
+                pt_hex=this.round(i,pt_hex,round_keys);//calls round function with arguments - round _no, pt_hex, round_keys
             }
-            var R=pt_hex.substr(0,8);
-            var L=pt_hex.substr(8);
-            R=this.xor(R,round_keys[16]);
-            L=this.xor(L,round_keys[17]);
-            var ct_hex=L+R;
-            return ct_hex;
+            //after 16 rounds, post-processing step
+            var R=pt_hex.substr(0,8);//the right part contains first 32 bits
+            var L=pt_hex.substr(8);// the left part contains last 32 bits
+            R=this.xor(R,round_keys[16]);//Xor-ing R with 16th round key
+            L=this.xor(L,round_keys[17]);//Xor-ing L with 17th round key
+            var ct_hex=L+R;//ct_hex is summation of Land R
+            return ct_hex;//return final ct-hex
         }
+        //The decryption process is similar to that of encryption and the subkeys are used in reverse{P[17] – P[0]}.
         Decrypt(string,key){
             var ct_hex=string;
             var round_keys=this.key_gen(key);
@@ -317,6 +321,7 @@ $(document).ready(function () {
 
 var obj=new Main_Class();
 
+// for CBC Mode
 $("#p_t1").keydown(function () {
     $("#c_t1").val("");
 });
@@ -324,17 +329,18 @@ $("#c_t1").keydown(function () {
     $("#p_t1").val("");
 });
 $("#encrypt1").click(function () {
-    var Ptext = $("#p_t1").val();
-    var key=$("#key1").val();
-    var Iv="e6f343ff8338e984";
-    var Ctext="";
+    var Ptext = $("#p_t1").val();// PText stores value entered at p_t1 element
+    var key=$("#key1").val(); // Key stores value entered at key1 element
+    var Iv="e6f343ff8338e984"; // IV to be used for CBC Mode
+    var Ctext=""; // Ctext empty as of now
     for(var i=0;i<Ptext.length;i+=16){
-        Ptext_block=obj.xor(Ptext.substr(i,16).padStart(16,'0'),Iv);
-        var Ctext_block = obj.Encrypt(Ptext_block,key);
+        Ptext_block=obj.xor(Ptext.substr(i,16).padStart(16,'0'),Iv); /*Ptext_block that goes for encryption is XOR of 64 bits of Ptext 
+        and IV (at first time) and previous Ctext_block for succecsive times*/
+        var Ctext_block = obj.Encrypt(Ptext_block,key); //Encypting the Ptext_block with key
         Ctext+=Ctext_block;
         Iv=Ctext_block;
     }
-    $("#c_t1").val(Ctext);
+    $("#c_t1").val(Ctext);//store value of end Ciphertext in c_t1 element
 });
 $("#decrypt1").click(function () {
     var Ctext = $("#c_t1").val();
@@ -350,7 +356,7 @@ $("#decrypt1").click(function () {
     $("#p_t1").val(Ptext);
 });
 
-
+// for OFB Mode
 $("#p_t2").keydown(function () {
     $("#c_t2").val("");
 });
@@ -358,13 +364,14 @@ $("#c_t2").keydown(function () {
     $("#p_t2").val("");
 });
 $("#encrypt2").click(function () {
-    var Ptext = $("#p_t2").val();
-    var key=$("#key2").val();
-    var Iv="e6f343ff8338e984";
-    var Ctext="";
+    var Ptext = $("#p_t2").val();// PText stores value entered at p_t1 element
+    var key=$("#key2").val();// Key stores value entered at key1 element
+    var Nonce="e6f343ff8338e984"; // Nonce to be used for OFB Mode
+    var Ctext="";// Ctext empty as of now
     for(var i=0;i<Ptext.length;i+=16){
-       Iv=obj.Encrypt(Iv,key);
-       var ct_block=obj.xor(Iv,Ptext.substr(i,16).padStart(16,'0'));
+       Nonce=obj.Encrypt(Nonce,key);//Nonce,key goes for encryption
+       var ct_block=obj.xor(Nonce,Ptext.substr(i,16).padStart(16,'0'));/*it is the output of the encryption function 
+       that is fed back to the shift register in OFB*/
        Ctext+=ct_block;
     }
     $("#c_t2").val(Ctext);
@@ -372,11 +379,11 @@ $("#encrypt2").click(function () {
 $("#decrypt2").click(function () {
     var Ctext = $("#c_t2").val();
     var key=$("#key2").val();
-    var Iv="e6f343ff8338e984";
+    var Nonce="e6f343ff8338e984";
     var Ptext="";
     for(var i=0;i<Ctext.length;i+=16){
-       Iv=obj.Encrypt(Iv,key);
-       var pt_block=obj.xor(Iv,Ctext.substr(i,16).padStart(16,'0'));
+       Nonce=obj.Encrypt(Nonce,key);
+       var pt_block=obj.xor(Nonce,Ctext.substr(i,16).padStart(16,'0'));
        Ptext+=pt_block;
     }
     $("#p_t2").val(Ptext);
