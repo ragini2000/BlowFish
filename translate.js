@@ -374,7 +374,7 @@ $("#c_t2").keydown(function () {
 $("#encrypt2").click(function () {
     var Ptext = $("#p_t2").val();
     var key=$("#key2").val();
-    var Iv=obj.IV;
+    var Nonce=obj.IV;
     var Ctext="";
     for(var i=0;i<Ptext.length;i+=16){
        Nonce=obj.Encrypt(Nonce,key);//Nonce,key goes for encryption
@@ -387,7 +387,7 @@ $("#encrypt2").click(function () {
 $("#decrypt2").click(function () {
     var Ctext = $("#c_t2").val();
     var key=$("#key2").val();
-    var Iv=obj.IV
+    var Nonce=obj.IV;
     var Ptext="";
     for(var i=0;i<Ctext.length;i+=16){
        Nonce=obj.Encrypt(Nonce,key);
