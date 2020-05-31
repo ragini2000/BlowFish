@@ -319,10 +319,11 @@ $(document).ready(function () {
     }
 
 
-var obj=new Main_Class(Ivgenerator());
+var obj=new Main_Class(Ivgenerator());// Object is initilised with the IV generator function
 function getRandomNumberBetween(min,max){
     return Math.floor(Math.random()*(max-min+1)+min);
 }
+// Random IV geenrator is used to generate Initilisation vector between the maximum and minimum value
 function Ivgenerator(){
     var Min_value = "0000000000000000";
     var Max_value = "FFFFFFFFFFFFFFFF";
@@ -339,17 +340,18 @@ $("#c_t1").keydown(function () {
 $("#encrypt1").click(function () {
     var Ptext = $("#p_t1").val();
     var key=$("#key1").val();
-    var Iv=obj.IV;
-    var Ctext="";
-    for(var i=0;i<Ptext.length;i+=16){
+    var Iv=obj.IV;//Random Intilisation vector
+    var Ctext="";// Ciphertext intiliased to be empty
+    for(var i=0;i<Ptext.length;i+=16){//64 bit taken as one block
         Ptext_block=obj.xor(Ptext.substr(i,16).padStart(16,'0'),Iv); /*Ptext_block that goes for encryption is XOR of 64 bits of Ptext 
         and IV (at first time) and previous Ctext_block for succecsive times*/
         var Ctext_block = obj.Encrypt(Ptext_block,key); //Encypting the Ptext_block with key
-        Ctext+=Ctext_block;
-        Iv=Ctext_block;
+        Ctext+=Ctext_block;//Adding the Cipher text in every Loop
+        Iv=Ctext_block;// Chaning the IV according to the CBC mode
     }
     $("#c_t1").val(Ctext);//store value of end Ciphertext in c_t1 element
 });
+//Same is used to decrypt the function
 $("#decrypt1").click(function () {
     var Ctext = $("#c_t1").val();
     var key=$("#key1").val();
@@ -371,19 +373,21 @@ $("#p_t2").keydown(function () {
 $("#c_t2").keydown(function () {
     $("#p_t2").val("");
 });
+// For the OFB mode
 $("#encrypt2").click(function () {
     var Ptext = $("#p_t2").val();
     var key=$("#key2").val();
-    var Nonce=obj.IV;
-    var Ctext="";
+    var Nonce=obj.IV;// Initial Nonce
+    var Ctext="";// Empty Cipher text
     for(var i=0;i<Ptext.length;i+=16){
        Nonce=obj.Encrypt(Nonce,key);//Nonce,key goes for encryption
        var ct_block=obj.xor(Nonce,Ptext.substr(i,16).padStart(16,'0'));/*it is the output of the encryption function 
        that is fed back to the shift register in OFB*/
-       Ctext+=ct_block;
+       Ctext+=ct_block;// Cipher get added as per the OFB model
     }
-    $("#c_t2").val(Ctext);
+    $("#c_t2").val(Ctext);//return the Cipher text
 });
+// Same is Applied as above for the Decryption process in OFB model
 $("#decrypt2").click(function () {
     var Ctext = $("#c_t2").val();
     var key=$("#key2").val();
